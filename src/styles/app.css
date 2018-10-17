@@ -1,0 +1,55 @@
+/* @import 'custom-media.css'; */
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400');
+@import 'colors.css';
+@import 'gradients.css';
+
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  margin: 0;
+}
+
+svg {
+  & text {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+}
+
+.gm-axis {
+  & .domain, & line {
+    stroke: var(--color-santas-gray);
+  }
+
+  & text {
+    fill: var(--color-santas-gray);
+    font-size: 1.75em;
+    font-weight: 400;
+  }
+}
+
+.gm-data-point {
+  stroke: var(--color-armadillo);
+  stroke-opacity: 0.7;
+}
+
+.gm-year-text {
+	fill: var(--color-lavender-gray);
+	font-size: 10em;
+	font-weight: 400;
+  letter-spacing: 0.5px;
+  opacity: 0.55;
+}
+
+.gm-axis-label {
+  fill: var(--color-raven);
+  font-size: 1.5em;
+}
+
+.gm-axis-units {
+  fill: var(--color-santas-gray);
+  font-size: 0.9em;
+}
+
+.gm-grid path, .gm-grid line {
+  opacity: 0.35;
+  stroke: var(--color-santas-gray);
+}
