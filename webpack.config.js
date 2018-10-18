@@ -19,7 +19,6 @@ module.exports = {
         use: [
           {
             loader: 'html-loader',
-            options: { minimize: true }
           }
         ]
       },
@@ -49,7 +48,7 @@ module.exports = {
   plugins: [
     new HtmlWebPackPlugin({
       template: './src/index.html',
-      filename: './index.html',
+      filename: '../index.html',
     }),
     new MiniCssExtractPlugin({
       filename: '[name].css',

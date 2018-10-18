@@ -1,0 +1,78 @@
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400);
+
+/* @import 'custom-media.css'; */
+:root {
+  --color-white: white;
+  --color-red: red;
+  --color-header: gray;
+  --color-aluminum: #999999;
+  --color-raven: #696F7E;
+  --color-oslo-gray: #8C8D90;
+  --color-armadillo: #464949;
+  --color-santas-gray: #979AA7;
+  --color-lavender-gray: #C4C6CD;
+  
+}
+:root {
+  --color-lavendar: #6C4D96;
+  --color-ship-cove: red;
+  --gradient-header: linear-gradient(
+    to bottom right,
+    var(--color-ship-cove), 
+    var(--color-lavendar)
+  );
+  --gradient-header-2: linear-gradient(
+    to right,
+    #EE5D5E,
+    #FFC900,
+    #24B9C4,
+    #8BC66F
+  );
+}
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  margin: 0;
+}
+svg text {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+.gm-axis .domain, .gm-axis line {
+    stroke: #979AA7;
+    stroke: var(--color-santas-gray);
+  }
+.gm-axis text {
+    fill: #979AA7;
+    fill: var(--color-santas-gray);
+    font-size: 1.75em;
+    font-weight: 400;
+  }
+.gm-data-point {
+  stroke: #464949;
+  stroke: var(--color-armadillo);
+  stroke-opacity: 0.7;
+}
+.gm-year-text {
+	fill: #C4C6CD;
+	fill: var(--color-lavender-gray);
+	font-size: 10em;
+	font-weight: 400;
+  letter-spacing: 0.5px;
+  opacity: 0.55;
+}
+.gm-axis-label {
+  fill: #696F7E;
+  fill: var(--color-raven);
+  font-size: 1.5em;
+}
+.gm-axis-units {
+  fill: #979AA7;
+  fill: var(--color-santas-gray);
+  font-size: 0.9em;
+}
+.gm-grid path, .gm-grid line {
+  opacity: 0.35;
+  stroke: #979AA7;
+  stroke: var(--color-santas-gray);
+}
+
+/*# sourceMappingURL=main.css.map*/
