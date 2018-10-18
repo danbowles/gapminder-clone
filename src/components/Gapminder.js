@@ -120,8 +120,12 @@ export default class Gapminder {
       .attr('class', 'gm-year-text')
       .attr('text-anchor', 'middle');
 
+    const gCircles = gRoot.append('g')
+      .attr('class', 'gm-circle-group');
+
     this.svg = svg;
     this.gRoot = gRoot;
+    this.gCircles = gCircles;
     this.gXAxis = gXAxis;
     this.gYAxis = gYAxis;
     this.xScale = xScale;
@@ -216,7 +220,7 @@ export default class Gapminder {
 
   setData(data) {
     const {
-      gRoot,
+      gCircles,
       xScale,
       yScale,
       areaScale,
@@ -234,7 +238,7 @@ export default class Gapminder {
       )
     );
 
-    const cCountries = gRoot
+    const cCountries = gCircles
       .selectAll('circle')
       .data(
         data.countries.filter((country) => country.income && country.life_exp),

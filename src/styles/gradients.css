@@ -6,4 +6,11 @@
     var(--color-ship-cove), 
     var(--color-lavendar)
   );
+  --gradient-header-2: linear-gradient(
+    to right,
+    #EE5D5E,
+    #FFC900,
+    #24B9C4,
+    #8BC66F
+  );
 }
