@@ -74,5 +74,10 @@ svg text {
   stroke: #979AA7;
   stroke: var(--color-santas-gray);
 }
+.gm-hover-group line {
+  stroke: #696F7E;
+  stroke: var(--color-raven);
+}
+
 
 /*# sourceMappingURL=main.css.map*/

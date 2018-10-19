@@ -2,16 +2,6 @@ import * as d3 from 'd3';
 
 const xTicks = [250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000];
 
-// TODO: to utils
-function xGridlines(x) {
-  return d3.axisBottom(x)
-    .tickValues(xTicks);
-}
-function yGridlines(y) {
-  return d3.axisLeft(y)
-    .ticks(8);
-}
-
 // TODO: constants
 const margin = {
   top: 30,
@@ -27,6 +17,16 @@ const colorSet = [
   '#24B9C4',
   '#8BC66F',
 ];
+
+// TODO: to utils
+function xGridlines(x) {
+  return d3.axisBottom(x)
+    .tickValues(xTicks);
+}
+function yGridlines(y) {
+  return d3.axisLeft(y)
+    .ticks(8);
+}
 
 export default class Gapminder {
   constructor(el, data) {
@@ -62,6 +62,8 @@ export default class Gapminder {
     this.xExtent = xExtent;
     this.yExtent = yExtent;
     this.data = data;
+    this.innerHeight = 0;
+    this.innerWidth = 0;
   }
 
   create(dimensions) {
@@ -120,6 +122,18 @@ export default class Gapminder {
       .attr('class', 'gm-year-text')
       .attr('text-anchor', 'middle');
 
+    const gHoverLines = gRoot.append('g')
+      .style('display', 'none')
+      .attr('class', 'gm-hover-group');
+
+    const xHoverLine = gHoverLines.append('line')
+      .style('stroke-dasharray', '3,3')
+      .attr('class', 'gm-hover-line-x');
+
+    const yHoverLine = gHoverLines.append('line')
+      .style('stroke-dasharray', '3,3')
+      .attr('class', 'gm-hover-line-y');
+
     const gCircles = gRoot.append('g')
       .attr('class', 'gm-circle-group');
 
@@ -140,6 +154,9 @@ export default class Gapminder {
     this.yAxisUnits = yAxisUnits;
     this.xGrid = xGrid;
     this.yGrid = yGrid;
+    this.gHoverLines = gHoverLines;
+    this.xHoverLine = xHoverLine;
+    this.yHoverLine = yHoverLine;
     this.render(dimensions);
   }
 
@@ -159,6 +176,9 @@ export default class Gapminder {
       yAxisUnits,
       xGrid,
       yGrid,
+      gHoverLines,
+      xHoverLine,
+      yHoverLine,
     } = this;
     const {
       top,
@@ -168,6 +188,8 @@ export default class Gapminder {
     } = margin;
     const innerHeight = height - top - bottom;
     const innerWidth = width - left - right;
+
+    gHoverLines.style('display', 'none');
 
     svg.attr('width', width)
       .attr('height', height);
@@ -211,11 +233,17 @@ export default class Gapminder {
     yGrid
       .call(yGridlines(yScale).tickSize(- innerWidth).tickFormat(''));
 
+    xHoverLine.attr('y1', 0).attr('y2', innerHeight);
+    yHoverLine.attr('x1', 0).attr('x2', innerWidth);
+
     const yearTextScale = width / 570;
     yearText
       .attr('x', (innerWidth / 2) / yearTextScale)
       .attr('y', (innerHeight / 2) / yearTextScale + 40)
       .attr('transform', `scale(${yearTextScale})`);
+
+    this.innerHeight = innerHeight;
+    this.innerWidth = innerWidth;
   }
 
   setData(data) {
@@ -226,6 +254,10 @@ export default class Gapminder {
       areaScale,
       continentsScale,
       yearText,
+      gHoverLines,
+      xHoverLine,
+      yHoverLine,
+      innerHeight,
     } = this;
 
     yearText.text(data.year);
@@ -241,7 +273,11 @@ export default class Gapminder {
     const cCountries = gCircles
       .selectAll('circle')
       .data(
-        data.countries.filter((country) => country.income && country.life_exp),
+        data.countries
+          .filter((country) => country.income && country.life_exp)
+          .sort(
+            (countryA, countryB) => countryA.population < countryB.population
+          ),
         (item) => item.country
       );
 
@@ -251,13 +287,32 @@ export default class Gapminder {
       .attr('r', 0)
       .remove();
 
+    function countryOver(dataItem, index, circles) {
+      gHoverLines.style('display', 'block');
+      // eslint-disable-next-line camelcase
+      const { income, life_exp } = dataItem;
+      const translateX = `translate(${xScale(income)}, ${yScale(life_exp)})`;
+      const translateY = `translate(0, ${yScale(life_exp)})`;
+      xHoverLine.attr('transform', translateX)
+        .attr('y2', innerHeight - yScale(life_exp));
+      yHoverLine.attr('transform', translateY)
+        .attr('x2', xScale(income));
+      d3.selectAll(circles).transition().style('opacity', '0.1');
+      d3.select(this).transition().style('opacity', '1');
+    }
+
+    function countryOut(itemData, index, circles) {
+      gHoverLines.style('display', 'none');
+      d3.selectAll(circles).transition().style('opacity', '1');
+    }
+
     cCountries
       .enter()
       .append('circle')
       .attr('class', 'gm-data-point')
       .attr('fill', (item) => continentsScale(item.continent))
-    // .on('mouseover', tooltip.show)
-    // .on('mouseout', tooltip.hide)
+      .on('mouseover', countryOver)
+      .on('mouseout', countryOut)
       .merge(cCountries)
       .transition()
       .attr('r', (item) => areaScale(Math.sqrt(item.population) / Math.PI))
