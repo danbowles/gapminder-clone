@@ -44,8 +44,14 @@ svg text {
     fill: #979AA7;
     fill: var(--color-santas-gray);
     font-size: 1.75em;
-    font-weight: 400;
+    font-weight: 400
   }
+@media (max-width: 32em) {
+
+.gm-axis text {
+      font-size: 1em
+  }
+    }
 .gm-data-point {
   stroke: #464949;
   stroke: var(--color-armadillo);
@@ -62,8 +68,14 @@ svg text {
 .gm-axis-label {
   fill: #696F7E;
   fill: var(--color-raven);
-  font-size: 1.5em;
+  font-size: 1.5em
 }
+@media (max-width: 32em) {
+
+.gm-axis-label {
+    font-size: 1.1em
+}
+  }
 .gm-axis-units {
   fill: #979AA7;
   fill: var(--color-santas-gray);
@@ -78,6 +90,26 @@ svg text {
   stroke: #696F7E;
   stroke: var(--color-raven);
 }
+.gm-hover-text text {
+    fill: #979AA7;
+    fill: var(--color-santas-gray);
+    font-size: 1.3em
+  }
+@media (max-width: 32em) {
+
+.gm-hover-text text {
+      font-size: 1em
+  }
+    }
+.gm-tooltip-rect {
+  fill: white;
+  stroke: #696F7E;
+  stroke: var(--color-raven)
+}
+.gm-tooltip-rect + text {
+    fill: #696F7E;
+    fill: var(--color-raven);
+  }
 
 
 /*# sourceMappingURL=main.css.map*/
