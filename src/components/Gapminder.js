@@ -5,9 +5,9 @@ const xTicks = [250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000];
 // TODO: constants
 const margin = {
   top: 30,
-  right: 30,
+  right: 15,
   bottom: 80,
-  left: 90,
+  left: 75,
 };
 
 // TODO: constants
@@ -28,6 +28,11 @@ function yGridlines(y) {
     .ticks(8);
 }
 
+function xTickFormat(value, index, ticks, precision = 0) {
+  return 10000 < value
+    ? d3.formatPrefix(`,.${precision}`, 1e3)(value) : d3.format(',')(value);
+}
+
 export default class Gapminder {
   constructor(el, data) {
     this.el = el;
@@ -36,14 +41,16 @@ export default class Gapminder {
       .map((country) => country.continent)
       .filter((item, idx, arr) => arr.indexOf(item) === idx);
 
-    const yExtent = d3.extent(
-      data.reduce(
-        (acc, { countries }) => acc.concat(
-          // eslint-disable-next-line camelcase
-          countries.map(({ life_exp }) => life_exp)
-        ), []
-      ).filter((item) => item)
-    );
+    // const yExtent = d3.extent(
+    //   data.reduce(
+    //     (acc, { countries }) => acc.concat(
+    //       // eslint-disable-next-line camelcase
+    //       countries.map(({ life_exp }) => life_exp)
+    //     ), []
+    //   ).filter((item) => item)
+    // );
+    // todo - consider permanently using 0-90
+    const yExtent = [0, 90];
 
     const xExtent = d3.extent(
       data.reduce(
@@ -70,6 +77,19 @@ export default class Gapminder {
     const { el, xExtent, yExtent } = this;
     const svg = d3.select(el);
 
+    const defs = svg.append('defs');
+
+    const blurFilter = defs.append('filter')
+      .attr('id', 'boxShadow');
+    blurFilter.append('feGaussianBlur')
+      .attr('stdDeviation', 3)
+      .attr('result', 'coloredBlur');
+    const feMerge = blurFilter.append('feMerge');
+    feMerge.append('feMergeNode')
+      .attr('in', 'coloredBlur');
+    feMerge.append('feMergeNode')
+      .attr('in', 'SourceGraphic');
+
     const gRoot = svg.append('g');
 
     // Append Axes
@@ -83,7 +103,7 @@ export default class Gapminder {
       .attr('class', 'gm-axis-label');
     const xAxisUnits = labelsGroup.append('text')
       .attr('text-anchor', 'end')
-      .attr('class', 'gm-axis-units')
+      .attr('class', 'gm-axis-units x')
       .text('per person (GDP/capita, PPP$ inflation-adjusted)');
 
     const yAxisLabel = labelsGroup.append('text').text('Life Expectancy')
@@ -122,20 +142,60 @@ export default class Gapminder {
       .attr('class', 'gm-year-text')
       .attr('text-anchor', 'middle');
 
+    // Hover Elements
     const gHoverLines = gRoot.append('g')
-      .style('display', 'none')
       .attr('class', 'gm-hover-group');
 
-    const xHoverLine = gHoverLines.append('line')
-      .style('stroke-dasharray', '3,3')
-      .attr('class', 'gm-hover-line-x');
+    const gHoverText = gHoverLines.append('g')
+      .attr('class', 'gm-hover-text')
+      .style('opacity', 0.9);
+
+    gHoverText.append('rect')
+      .attr('class', 'gm-hover-mask-y')
+      .attr('x', - 35)
+      .style('fill', 'white')
+      .attr('width', 35);
+    gHoverText.append('rect')
+      .attr('class', 'gm-hover-mask-x')
+      .attr('x', 0)
+      .attr('height', 25)
+      .style('fill', 'white');
+
+    gHoverText.append('text')
+      .attr('class', 'gm-hover-text-y')
+      .attr('text-anchor', 'end')
+      .attr('x', - 5)
+      .attr('y', 30)
+      .text('00.0')
+      .attr('fill', 'black');
+    gHoverText.append('text')
+      .attr('class', 'gm-hover-text-x')
+      .attr('text-anchor', 'middle')
+      .attr('x', 0)
+      .attr('y', 30)
+      .text('99.9')
+      .attr('fill', 'black');
 
     const yHoverLine = gHoverLines.append('line')
       .style('stroke-dasharray', '3,3')
       .attr('class', 'gm-hover-line-y');
 
+    const xHoverLine = gHoverLines.append('line')
+      .style('stroke-dasharray', '3,3')
+      .attr('class', 'gm-hover-line-x');
+
     const gCircles = gRoot.append('g')
       .attr('class', 'gm-circle-group');
+
+    const gTooltip = gRoot.append('g')
+      .attr('transform', 'translate(100,100)')
+      .style('filter', 'url(#boxShadow)')
+      .style('display', 'none');
+
+    const tooltipRect = gTooltip.append('rect')
+      .attr('rx', 10)
+      .attr('class', 'gm-tooltip-rect');
+    const tooltipText = gTooltip.append('text');
 
     this.svg = svg;
     this.gRoot = gRoot;
@@ -157,7 +217,50 @@ export default class Gapminder {
     this.gHoverLines = gHoverLines;
     this.xHoverLine = xHoverLine;
     this.yHoverLine = yHoverLine;
+    this.gHoverText = gHoverText;
+    this.gTooltip = gTooltip;
+    this.tooltipRect = tooltipRect;
+    this.tooltipText = tooltipText;
+    this.sizeTooltip();
     this.render(dimensions);
+  }
+
+  positionTooltip(element) {
+    const radius = + element.attr('r');
+    const cx = + element.attr('cx');
+    const cy = + element.attr('cy');
+    const { gTooltip } = this;
+    const { width, height } = gTooltip.node().getBBox();
+    const toBottom = 0 > (cy - radius - height);
+    const toRight = 0 > (cx - radius - width);
+    let x;
+    let y;
+    let theta;
+    if (toBottom) {
+      theta = (- Math.PI / 4) * (toRight ? 3 : 1); // -45 or -135
+      x = cx - (Math.cos(theta) * radius) - width - 8;
+      y = cy - (Math.sin(theta) * radius);
+    } else {
+      theta = (Math.PI / 4) * (toRight ? 3 : 1); // 45
+      x = cx - (Math.cos(theta) * radius) - width - 8;
+      y = cy - (Math.sin(theta) * radius) - height;
+    }
+
+    gTooltip.attr('transform', `translate(${x}, ${y})`);
+  }
+
+  sizeTooltip() {
+    const padding = 10;
+    const { tooltipRect, tooltipText } = this;
+    const bbox = tooltipText.node().getBBox();
+    tooltipRect
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', bbox.width + (2 * padding))
+      .attr('height', bbox.height + (2 * padding));
+    tooltipText
+      .attr('x', padding)
+      .attr('y', bbox.height + padding / 2);
   }
 
   render({ width, height }) {
@@ -177,6 +280,7 @@ export default class Gapminder {
       xGrid,
       yGrid,
       gHoverLines,
+      gHoverText,
       xHoverLine,
       yHoverLine,
     } = this;
@@ -206,9 +310,7 @@ export default class Gapminder {
     const yAxis = d3.axisLeft(yScale);
     const xAxis = d3.axisBottom(xScale)
       .tickValues(xTicks)
-      .tickFormat((tick) => (
-        10000 < tick ? d3.formatPrefix(',.0', 1e3)(tick) : d3.format(',')(tick)
-      ));
+      .tickFormat(xTickFormat);
 
     // Axis Labels
     xAxisLabel.attr('x', innerWidth / 2)
@@ -236,6 +338,15 @@ export default class Gapminder {
     xHoverLine.attr('y1', 0).attr('y2', innerHeight);
     yHoverLine.attr('x1', 0).attr('x2', innerWidth);
 
+    gHoverText.select('.gm-hover-mask-y')
+      .attr('height', innerHeight + 21)
+      .attr('y', - 10);
+    gHoverText.select('.gm-hover-mask-x')
+      .attr('width', innerWidth)
+      .attr('y', innerHeight + 1);
+    gHoverText.select('.gm-hover-text-x')
+      .attr('y', innerHeight + 23);
+
     const yearTextScale = width / 570;
     yearText
       .attr('x', (innerWidth / 2) / yearTextScale)
@@ -254,10 +365,13 @@ export default class Gapminder {
       areaScale,
       continentsScale,
       yearText,
+      gHoverText,
       gHoverLines,
       xHoverLine,
       yHoverLine,
       innerHeight,
+      tooltipText,
+      gTooltip,
     } = this;
 
     yearText.text(data.year);
@@ -276,7 +390,7 @@ export default class Gapminder {
         data.countries
           .filter((country) => country.income && country.life_exp)
           .sort(
-            (countryA, countryB) => countryA.population < countryB.population
+            ({ population: pA }, { population: pB }) => (pA > pB ? - 1 : 1)
           ),
         (item) => item.country
       );
@@ -288,22 +402,38 @@ export default class Gapminder {
       .remove();
 
     function countryOver(dataItem, index, circles) {
+      const element = d3.select(circles[index]);
       gHoverLines.style('display', 'block');
       // eslint-disable-next-line camelcase
-      const { income, life_exp } = dataItem;
-      const translateX = `translate(${xScale(income)}, ${yScale(life_exp)})`;
-      const translateY = `translate(0, ${yScale(life_exp)})`;
+      const { income, life_exp, country } = dataItem;
+      const x = xScale(income);
+      const y = yScale(life_exp);
+      const translateX = `translate(${x}, ${y})`;
+      const translateY = `translate(0, ${y})`;
+
+      gTooltip.style('display', 'block');
+      tooltipText.text(country);
+      this.sizeTooltip();
+      this.positionTooltip(element);
+
       xHoverLine.attr('transform', translateX)
-        .attr('y2', innerHeight - yScale(life_exp));
+        .attr('y2', innerHeight - y);
       yHoverLine.attr('transform', translateY)
-        .attr('x2', xScale(income));
+        .attr('x2', x);
+      gHoverText.select('.gm-hover-text-x')
+        .attr('x', x)
+        .text(xTickFormat(income, null, null, 1));
+      gHoverText.select('.gm-hover-text-y')
+        .attr('y', y + 7)
+        .text(life_exp);
       d3.selectAll(circles).transition().style('opacity', '0.1');
-      d3.select(this).transition().style('opacity', '1');
+      element.transition().style('opacity', '1');
     }
 
     function countryOut(itemData, index, circles) {
       gHoverLines.style('display', 'none');
       d3.selectAll(circles).transition().style('opacity', '1');
+      gTooltip.style('display', 'none');
     }
 
     cCountries
@@ -311,7 +441,7 @@ export default class Gapminder {
       .append('circle')
       .attr('class', 'gm-data-point')
       .attr('fill', (item) => continentsScale(item.continent))
-      .on('mouseover', countryOver)
+      .on('mouseover', countryOver.bind(this))
       .on('mouseout', countryOut)
       .merge(cCountries)
       .transition()

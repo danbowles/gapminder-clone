@@ -1,9 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 import Responsive from './Responsive';
 import Gapminder from './Gapminder';
 
 const height = 700;
+const MarginedChart = styled.div`
+  margin-top: 2em;
+`;
 
 class Chart extends React.Component {
   static propTypes = {
@@ -33,7 +37,9 @@ class Chart extends React.Component {
 
   render() {
     return (
-      <svg ref={this.setRef.bind(this)} />
+      <MarginedChart>
+        <svg ref={this.setRef.bind(this)} />
+      </MarginedChart>
     );
   }
 }

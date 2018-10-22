@@ -3,6 +3,8 @@
 @import 'colors.css';
 @import 'gradients.css';
 
+@custom-media --sm-max (max-width: 32em);
+
 body {
   font-family: 'Source Sans Pro', sans-serif;
   margin: 0;
@@ -23,6 +25,9 @@ svg {
     fill: var(--color-santas-gray);
     font-size: 1.75em;
     font-weight: 400;
+    @media (--sm-max) {
+      font-size: 1em;
+    }
   }
 }
 
@@ -42,11 +47,19 @@ svg {
 .gm-axis-label {
   fill: var(--color-raven);
   font-size: 1.5em;
+  @media (--sm-max) {
+    font-size: 1.1em;
+  }
 }
 
 .gm-axis-units {
   fill: var(--color-santas-gray);
   font-size: 0.9em;
+  &.x {
+    @media (--sm-max) {
+      display: none;
+    }
+  }
 }
 
 .gm-grid path, .gm-grid line {
@@ -56,4 +69,20 @@ svg {
 
 .gm-hover-group line {
   stroke: var(--color-raven);
+}
+
+.gm-hover-text {
+  & text {
+    fill: var(--color-santas-gray);
+    font-size: 1.3em;
+  }
+}
+
+.gm-tooltip-rect {
+  fill: white;
+  stroke: var(--color-raven);
+
+  & + text {
+    fill: var(--color-raven);
+  }
 }
