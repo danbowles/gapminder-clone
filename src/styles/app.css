@@ -147,3 +147,16 @@ input::-ms-track {
 input::-webkit-slider-thumb {
   @apply --range-thumb;
 }
+
+.gm-legend-row {
+  cursor: pointer;
+
+  & text {
+    fill: var(--color-raven);
+    text-transform: capitalize;
+  }
+
+  & rect {
+    stroke: var(--color-raven);
+  }
+}

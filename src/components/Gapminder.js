@@ -77,6 +77,7 @@ export default class Gapminder {
     this.areaExtent = areaExtent;
     this.xExtent = xExtent;
     this.yExtent = yExtent;
+    this.filteredContinents = [];
     this.data = data;
     this.innerHeight = 0;
     this.innerWidth = 0;
@@ -88,7 +89,10 @@ export default class Gapminder {
       xExtent,
       yExtent,
       areaExtent,
+      continents,
     } = this;
+
+    let { filteredContinents } = this;
     const svg = d3.select(el);
 
     const defs = svg.append('defs');
@@ -212,6 +216,41 @@ export default class Gapminder {
       .attr('class', 'gm-tooltip-rect');
     const tooltipText = gTooltip.append('text');
 
+    const gLegend = gRoot.append('g');
+    const gLegendRows = gLegend.selectAll('g')
+      .data(continents)
+      .enter()
+      .append('g')
+      .attr('class', 'gm-legend-row')
+      .attr('transform', (dataItem, index) => `translate(0, ${index * 24})`)
+      .on('click', (dataItem, index, nodes) => {
+        const rect = d3.select(nodes[index]).select('rect');
+        if (filteredContinents.includes(dataItem)) {
+          filteredContinents.splice(filteredContinents.indexOf(dataItem), 1);
+          rect.attr('fill', continentsScale(dataItem));
+        } else {
+          filteredContinents.splice(0, 0, dataItem);
+          rect.attr('fill', 'white');
+        }
+        if (filteredContinents.length === continents.length) {
+          filteredContinents = [];
+          this.resetLegend();
+        }
+
+        this.filteredContinents = filteredContinents;
+        this.setData();
+      });
+    gLegendRows.append('rect')
+      .attr('height', 16)
+      .attr('width', 16)
+      .attr('fill', (dataItem) => continentsScale(dataItem));
+    gLegendRows.append('text')
+      .text((dataItem) => dataItem)
+      .attr('text-anchor', 'end')
+      .attr('class', 'continent')
+      .attr('x', - 6)
+      .attr('y', 13);
+
     this.svg = svg;
     this.gRoot = gRoot;
     this.gCircles = gCircles;
@@ -236,8 +275,17 @@ export default class Gapminder {
     this.gTooltip = gTooltip;
     this.tooltipRect = tooltipRect;
     this.tooltipText = tooltipText;
+    this.gLegend = gLegend;
+    this.gLegendRows = gLegendRows;
     this.sizeTooltip();
     this.render(dimensions);
+  }
+
+  resetLegend() {
+    const { gLegendRows, continentsScale } = this;
+    gLegendRows
+      .selectAll('rect')
+      .attr('fill', (dataItem) => continentsScale(dataItem));
   }
 
   positionTooltip(element) {
@@ -298,6 +346,7 @@ export default class Gapminder {
       gHoverText,
       xHoverLine,
       yHoverLine,
+      gLegend,
     } = this;
     const {
       top,
@@ -369,11 +418,18 @@ export default class Gapminder {
       .attr('y', (innerHeight / 2) / yearTextScale + 40)
       .attr('transform', `scale(${yearTextScale})`);
 
+    // Add Legend
+    gLegend
+      .attr(
+        'transform',
+        `translate(${innerWidth - 50}, ${innerHeight - 150})`
+      );
+
     this.innerHeight = innerHeight;
     this.innerWidth = innerWidth;
   }
 
-  setData(data) {
+  setData(data = this.data) {
     const {
       gCircles,
       xScale,
@@ -388,7 +444,10 @@ export default class Gapminder {
       innerHeight,
       tooltipText,
       gTooltip,
+      filteredContinents,
     } = this;
+
+    this.data = data;
 
     yearText.text(data.year);
 
@@ -405,6 +464,7 @@ export default class Gapminder {
       .data(
         data.countries
           .filter((country) => country.income && country.life_exp)
+          .filter((country) => ! filteredContinents.includes(country.continent))
           .sort(
             ({ population: pA }, { population: pB }) => (pA > pB ? - 1 : 1)
           ),
