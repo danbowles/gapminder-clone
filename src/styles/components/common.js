@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { media } from '../../config/breakpoints';
 
-const Layout = styled.div`
+const layoutCommon = `
   max-width: 85%;
   margin: 0 auto;
 
@@ -10,4 +10,12 @@ const Layout = styled.div`
   }
 `;
 
-export default Layout;
+export const Layout = styled.div`
+  ${layoutCommon}
+`;
+
+export const FlexLayout = styled.div`
+  ${layoutCommon}
+  display: flex;
+`;
+

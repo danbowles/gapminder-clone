@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import Layout from '../styles/components/common';
+import { Layout } from '../styles/components/common';
 import { media } from '../config/breakpoints';
 
 const Header = ({ title }) => {

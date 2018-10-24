@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400');
 @import 'colors.css';
 @import 'gradients.css';
+@import 'rangeInput.css';
 
 @custom-media --sm-max (max-width: 32em);
 
@@ -23,10 +24,10 @@ svg {
 
   & text {
     fill: var(--color-santas-gray);
-    font-size: 1.75em;
+    font-size: 17px;
     font-weight: 400;
     @media (--sm-max) {
-      font-size: 1em;
+      font-size: 13px;
     }
   }
 }
@@ -69,10 +70,10 @@ svg {
 .gm-hover-text {
   & text {
     fill: var(--color-santas-gray);
-    font-size: 1.3em;
+    font-size: 19px;
 
     @media (--sm-max) {
-      font-size: 1em;
+      font-size: 14px;
     }
   }
 }
@@ -84,4 +85,66 @@ svg {
   & + text {
     fill: var(--color-raven);
   }
+}
+
+:root {
+  --range {
+    appearance: none;
+    background: var(--color-lavender-gray);
+    box-sizing: border-box;
+    border: none;
+    border-radius: 1.5em;
+    height: 1.5em;
+    margin: 0;
+    outline: none;
+    width: 100%;
+  }
+
+  --range-fill {
+    background: blue;
+    height: 1.5em;
+  }
+
+  --range-thumb {
+    background: var(--color-raven);
+    border: 3px solid white;
+    border-radius: 50%;
+    box-sizing: border-box;
+    height: 2.8em;
+    width: 2.8em;
+  }
+}
+
+[type='range'] {
+  &, &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+  }
+
+  background: transparent;
+  margin: 0;
+	padding: 0;
+
+  &::-webkit-slider-runnable-track {
+    @apply --range;
+  }
+  &::-moz-range-progress { @apply --range; }
+	&::-ms-fill-lower { @apply --range; }
+
+  &::-webkit-slider-thumb {
+		margin-top: -0.55em;
+	}
+}
+
+input::-webkit-slider-runnable-track {
+  @apply --range;
+}
+input::-moz-range-track {
+  @apply --range;
+}
+input::-ms-track {
+  @apply --range;
+}
+
+input::-webkit-slider-thumb {
+  @apply --range-thumb;
 }

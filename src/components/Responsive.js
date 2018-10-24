@@ -1,5 +1,5 @@
 import React from 'react';
-import Layout from '../styles/components/common';
+import { Layout } from '../styles/components/common';
 
 const Responsive = (ComposedComponent) => (
   class extends React.Component {

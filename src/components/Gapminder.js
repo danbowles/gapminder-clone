@@ -5,9 +5,9 @@ const xTicks = [250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000];
 // TODO: constants
 const margin = {
   top: 30,
-  right: 15,
-  bottom: 80,
-  left: 75,
+  right: 5,
+  bottom: 50,
+  left: 65,
 };
 
 // TODO: constants
@@ -60,12 +60,21 @@ export default class Gapminder {
       ).filter((item) => item)
     );
 
+    const areaExtent = d3.extent(
+      data.reduce(
+        (acc, { countries }) => acc.concat(
+          countries.map(({ population }) => Math.sqrt(population) / Math.PI)
+        ), []
+      ).filter((item) => item)
+    );
+
     // this.init = this.init.bind(this);
     this.create = this.create.bind(this);
     this.render = this.render.bind(this);
     this.setData = this.setData.bind(this);
 
     this.continents = continents;
+    this.areaExtent = areaExtent;
     this.xExtent = xExtent;
     this.yExtent = yExtent;
     this.data = data;
@@ -74,7 +83,12 @@ export default class Gapminder {
   }
 
   create(dimensions) {
-    const { el, xExtent, yExtent } = this;
+    const {
+      el,
+      xExtent,
+      yExtent,
+      areaExtent,
+    } = this;
     const svg = d3.select(el);
 
     const defs = svg.append('defs');
@@ -129,7 +143,8 @@ export default class Gapminder {
     const xScale = d3.scaleLog()
       .domain(xExtent);
 
-    const areaScale = d3.scaleLinear();
+    const areaScale = d3.scaleLinear()
+      .domain(areaExtent);
 
     const continentsScale = d3.scaleOrdinal(
       colorSet
@@ -305,6 +320,7 @@ export default class Gapminder {
     // Scales
     yScale.range([innerHeight, 0]).domain();
     xScale.range([0, innerWidth]);
+    // areaScale.range([1, 181]);
     areaScale.range([width * 0.0025, width * 0.05]);
 
     const yAxis = d3.axisLeft(yScale);
@@ -376,13 +392,13 @@ export default class Gapminder {
 
     yearText.text(data.year);
 
-    areaScale.domain(
-      d3.extent(
-        data.countries.map(
-          (country) => Math.sqrt(country.population) / Math.PI
-        )
-      )
-    );
+    // areaScale.domain(
+    //   d3.extent(
+    //     data.countries.map(
+    //       (country) => Math.sqrt(country.population) / Math.PI
+    //     )
+    //   )
+    // );
 
     const cCountries = gCircles
       .selectAll('circle')
@@ -425,7 +441,7 @@ export default class Gapminder {
         .text(xTickFormat(income, null, null, 1));
       gHoverText.select('.gm-hover-text-y')
         .attr('y', y + 7)
-        .text(life_exp);
+        .text(d3.format(',.1f')(life_exp));
       d3.selectAll(circles).transition().style('opacity', '0.1');
       element.transition().style('opacity', '1');
     }
@@ -441,9 +457,9 @@ export default class Gapminder {
       .append('circle')
       .attr('class', 'gm-data-point')
       .attr('fill', (item) => continentsScale(item.continent))
+      .merge(cCountries)
       .on('mouseover', countryOver.bind(this))
       .on('mouseout', countryOut)
-      .merge(cCountries)
       .transition()
       .attr('r', (item) => areaScale(Math.sqrt(item.population) / Math.PI))
       .attr('cx', (item) => xScale(item.income))
