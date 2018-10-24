@@ -208,6 +208,18 @@ input::-webkit-slider-thumb {
   height: 2.8em;
   width: 2.8em;
 }
+.gm-legend-row {
+  cursor: pointer
+}
+.gm-legend-row text {
+    fill: #696F7E;
+    fill: var(--color-raven);
+    text-transform: capitalize;
+  }
+.gm-legend-row rect {
+    stroke: #696F7E;
+    stroke: var(--color-raven);
+  }
 
 
 /*# sourceMappingURL=main.css.map*/
