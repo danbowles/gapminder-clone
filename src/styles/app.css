@@ -2,7 +2,6 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400');
 @import 'colors.css';
 @import 'gradients.css';
-@import 'rangeInput.css';
 
 @custom-media --sm-max (max-width: 32em);
 
