@@ -209,7 +209,7 @@ export default class Gapminder {
     const gTooltip = gRoot.append('g')
       .attr('transform', 'translate(100,100)')
       .style('filter', 'url(#boxShadow)')
-      .style('display', 'none');
+      .style('visibility', 'hidden');
 
     const tooltipRect = gTooltip.append('rect')
       .attr('rx', 10)
@@ -487,7 +487,7 @@ export default class Gapminder {
       const translateX = `translate(${x}, ${y})`;
       const translateY = `translate(0, ${y})`;
 
-      gTooltip.style('display', 'block');
+      gTooltip.style('visibility', 'visible');
       tooltipText.text(country);
       this.sizeTooltip();
       this.positionTooltip(element);
@@ -509,7 +509,7 @@ export default class Gapminder {
     function countryOut(itemData, index, circles) {
       gHoverLines.style('display', 'none');
       d3.selectAll(circles).transition().style('opacity', '1');
-      gTooltip.style('display', 'none');
+      gTooltip.style('visibility', 'hidden');
     }
 
     cCountries
